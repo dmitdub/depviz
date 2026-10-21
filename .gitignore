@@ -1,0 +1,10 @@
+bin/
+*.exe
+*.out
+coverage.out
+.idea/
+.vscode/
+Thumbs.db
+desktop.ini
+deps.svg
+deps.png
