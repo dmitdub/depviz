@@ -14,7 +14,7 @@ const (
 	// testMaxDepth — глубина, используемая в тестовых конфигах.
 	testMaxDepth = 3
 	// expectedParams — сколько параметров возвращает Config.AsKeyValue.
-	expectedParams = 7
+	expectedParams = 8
 )
 
 // loadErrorCases — таблица кейсов для TestConfigLoadErrors.
@@ -65,6 +65,7 @@ func writeTemp(t *testing.T, content string) string {
 func TestConfigLoadValid(t *testing.T) {
 	p := writeTemp(t, `
 package_name     = "curl"
+package_version  = "8.5.0-r0"
 repository_url   = "https://example.org/repo"
 test_repository  = false
 output_image     = "out.svg"

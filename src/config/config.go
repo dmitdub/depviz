@@ -14,6 +14,7 @@ const minDepth = 1
 // Config описывает настраиваемые пользователем параметры.
 type Config struct {
 	PackageName     string `toml:"package_name"`
+	PackageVersion  string `toml:"package_version"`
 	RepositoryURL   string `toml:"repository_url"`
 	TestRepository  bool   `toml:"test_repository"`
 	TestFilePath    string `toml:"test_file_path"`
@@ -66,6 +67,7 @@ func (c *Config) Validate() error {
 func (c *Config) AsKeyValue() [][2]string {
 	return [][2]string{
 		{"package.name", c.PackageName},
+		{"package.version", c.PackageVersion},
 		{"repository.url", c.RepositoryURL},
 		{"test.repository", fmt.Sprintf("%v", c.TestRepository)},
 		{"test.file.path", c.TestFilePath},

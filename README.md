@@ -11,14 +11,17 @@ Alpine Linux (apk). Учебный проект по дисциплине
 
 * **Этап 1 — Конфигурация.** TOML-файл, вывод всех параметров
   в формате `key = value`, валидация каждого параметра.
-* Этапы 2–5 — в разработке.
+* **Этап 2 — Сбор данных.** Скачивание `APKINDEX.tar.gz`,
+  поиск пакета по имени и версии, вывод прямых зависимостей.
+* Этапы 3–5 — в разработке.
 
 ## Структура проекта
 
     depviz/
     ├── src/
     │   ├── main.go         точка входа
-    │   ├── app/            вывод конфигурации
+    │   ├── app/            вывод конфигурации и зависимостей
+    │   ├── apk/            скачивание и парсинг APKINDEX
     │   └── config/         разбор и валидация TOML
     ├── tests/              тесты
     ├── testdata/           примеры конфигов и тестовых данных
@@ -45,6 +48,10 @@ Alpine Linux (apk). Учебный проект по дисциплине
     ./bin/depviz testdata/config.example.toml
     bash scripts/run.sh path/to/config.toml
 
+Прямые зависимости из реального репозитория:
+
+    bash scripts/run-apk.sh
+
 Все параметры конфигурации печатаются в **stderr** в формате
 `key = value` (как в эталонном `shell-emulator`).
 
@@ -53,13 +60,14 @@ Alpine Linux (apk). Учебный проект по дисциплине
     make test
     bash scripts/run-errors.sh
 
-## Параметры конфигурации (этап 1)
+## Параметры конфигурации
 
 Источник — TOML-файл. Пример — `testdata/config.example.toml`.
 
 | Ключ              | Тип    | Описание                                           |
 |-------------------|--------|----------------------------------------------------|
 | `package_name`    | string | Имя анализируемого пакета                          |
+| `package_version` | string | Версия анализируемого пакета                       |
 | `repository_url`  | string | URL apk-репозитория                                |
 | `test_repository` | bool   | Режим тестового репозитория                        |
 | `test_file_path`  | string | Путь к файлу тестового репозитория                 |
@@ -85,12 +93,22 @@ Alpine Linux (apk). Учебный проект по дисциплине
     $ make run
     configuration:
     package.name       = curl
+    package.version    = 8.5.0-r0
     repository.url     = https://dl-cdn.alpinelinux.org/alpine/v3.20/main/x86_64/
     test.repository    = false
     test.file.path     = 
     output.image       = deps.svg
     max.depth          = 5
     filter.substring   = test
+
+Прямые зависимости:
+
+    $ bash scripts/run-apk.sh
+    package: curl 8.5.0-r0
+    dependencies:
+      libcurl
+      so:libc.musl-x86_64.so.1
+      ...
 
 ## Лицензия
 

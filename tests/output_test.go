@@ -18,6 +18,7 @@ func TestConfigOutput(t *testing.T) {
 	p := filepath.Join(dir, "config.toml")
 	content := `
 package_name     = "curl"
+package_version  = "8.5.0-r0"
 repository_url   = "https://example.org/repo"
 test_repository  = false
 output_image     = "out.svg"
@@ -38,7 +39,7 @@ filter_substring = "dev"
 
 	out := buf.String()
 	keys := []string{
-		"package.name", "repository.url", "test.repository",
+		"package.name", "package.version", "repository.url", "test.repository",
 		"test.file.path", "output.image", "max.depth", "filter.substring",
 	}
 	for _, key := range keys {
