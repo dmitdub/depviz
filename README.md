@@ -13,16 +13,20 @@ Alpine Linux (apk). Учебный проект по дисциплине
   в формате `key = value`, валидация каждого параметра.
 * **Этап 2 — Сбор данных.** Скачивание `APKINDEX.tar.gz`,
   поиск пакета по имени и версии, вывод прямых зависимостей.
-* Этапы 3–5 — в разработке.
+* **Этап 3 — Основные операции.** Построение графа зависимостей
+  BFS с рекурсией, учёт `max_depth`, фильтр `filter_substring`,
+  обработка циклов, режим тестового репозитория.
+* Этапы 4–5 — в разработке.
 
 ## Структура проекта
 
     depviz/
     ├── src/
     │   ├── main.go         точка входа
-    │   ├── app/            вывод конфигурации и зависимостей
+    │   ├── app/            вывод конфигурации и графа
     │   ├── apk/            скачивание и парсинг APKINDEX
-    │   └── config/         разбор и валидация TOML
+    │   ├── config/         разбор и валидация TOML
+    │   └── graph/          построение и обход графа зависимостей
     ├── tests/              тесты
     ├── testdata/           примеры конфигов и тестовых данных
     ├── scripts/            скрипты запуска и проверок
@@ -44,16 +48,21 @@ Alpine Linux (apk). Учебный проект по дисциплине
 
 ## Запуск
 
+Тестовый репозиторий (без сети):
+
     make run
-    ./bin/depviz testdata/config.example.toml
-    bash scripts/run.sh path/to/config.toml
+    make run-graph
+    bash scripts/run-graph.sh testdata/config.test.toml
 
-Прямые зависимости из реального репозитория:
+Реальный APKINDEX:
 
+    make run-apk
     bash scripts/run-apk.sh
 
-Все параметры конфигурации печатаются в **stderr** в формате
-`key = value` (как в эталонном `shell-emulator`).
+С произвольным конфигом:
+
+    ./bin/depviz path/to/config.toml
+    bash scripts/run.sh path/to/config.toml
 
 ## Тесты
 
@@ -62,18 +71,32 @@ Alpine Linux (apk). Учебный проект по дисциплине
 
 ## Параметры конфигурации
 
-Источник — TOML-файл. Пример — `testdata/config.example.toml`.
+Источник — TOML-файл. Примеры — `testdata/config.example.toml`,
+`testdata/config.test.toml`.
 
 | Ключ              | Тип    | Описание                                           |
 |-------------------|--------|----------------------------------------------------|
 | `package_name`    | string | Имя анализируемого пакета                          |
-| `package_version` | string | Версия анализируемого пакета                       |
+| `package_version` | string | Версия анализируемого пакета (для этапа 2)         |
 | `repository_url`  | string | URL apk-репозитория                                |
 | `test_repository` | bool   | Режим тестового репозитория                        |
 | `test_file_path`  | string | Путь к файлу тестового репозитория                 |
 | `output_image`    | string | Имя файла с изображением графа                     |
 | `max_depth`       | int    | Максимальная глубина анализа (`>= 1`)              |
 | `filter_substring`| string | Подстрока для фильтрации пакетов                   |
+
+## Тестовый репозиторий
+
+Файл `testdata/graph_test.txt` описывает граф в формате:
+
+    A: B C
+    B: D
+    C: D E
+    D: E
+    E: A
+
+Строка `ИМЯ: ЗАВ1 ЗАВ2 ...` — зависимости через пробел.
+Пустое поле после `:` — пакет без зависимостей.
 
 ## Обработка ошибок
 
@@ -90,25 +113,27 @@ Alpine Linux (apk). Учебный проект по дисциплине
 
 ## Пример вывода
 
-    $ make run
-    configuration:
-    package.name       = curl
-    package.version    = 8.5.0-r0
-    repository.url     = https://dl-cdn.alpinelinux.org/alpine/v3.20/main/x86_64/
-    test.repository    = false
-    test.file.path     = 
-    output.image       = deps.svg
-    max.depth          = 5
-    filter.substring   = test
+Граф в тестовом режиме:
 
-Прямые зависимости:
+    $ make run-graph
+    root: A
+    nodes: 5
+    graph:
+      A (depth=0): B, C
+      B (depth=1): D
+      D (depth=2): E
+      E (depth=3): A
+      C (depth=1): D, E
 
-    $ bash scripts/run-apk.sh
-    package: curl 8.5.0-r0
-    dependencies:
-      libcurl
-      so:libc.musl-x86_64.so.1
-      ...
+Граф по реальному APKINDEX:
+
+    $ make run-apk
+    root: curl
+    nodes: 3
+    graph:
+      curl (depth=0): libcurl
+      libcurl (depth=1): ca-certificates
+      ca-certificates (depth=2): (none)
 
 ## Лицензия
 
