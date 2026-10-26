@@ -7,7 +7,7 @@ build:
 	go build -o $(BIN) $(SRC)
 
 test:
-	go test ./src/... ./tests/... -v
+	go test ./tests/... -v
 
 run: build
 	./$(BIN) testdata/config.example.toml

@@ -3,9 +3,9 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-echo "######## run.sh (успешный запуск) ########"
+echo "run.sh (успешный запуск)"
 bash scripts/run.sh testdata/config.example.toml
 
 echo
-echo "######## run-errors.sh (обработка ошибок) ########"
+echo "run-errors.sh (обработка ошибок)"
 bash scripts/run-errors.sh

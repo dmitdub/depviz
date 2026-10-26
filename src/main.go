@@ -5,25 +5,22 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dmitdub/depviz/src/apk"
 	"github.com/dmitdub/depviz/src/app"
 	"github.com/dmitdub/depviz/src/config"
 )
 
-// Коды возврата процесса.
 const (
 	exitOK    = 0
 	exitError = 1
 )
 
-// defaultConfigPath — путь к конфигу по умолчанию.
 const defaultConfigPath = "testdata/config.example.toml"
 
-// main запускает приложение и завершает процесс с соответствующим кодом.
 func main() {
 	os.Exit(run(os.Args[1:], os.Stderr))
 }
 
-// run выполняет разбор аргументов, загрузку конфигурации и вывод.
 func run(args []string, stderr *os.File) int {
 	path := defaultConfigPath
 	if len(args) > 0 {
@@ -36,6 +33,23 @@ func run(args []string, stderr *os.File) int {
 		return exitError
 	}
 
-	app.Run(cfg, stderr)
+	if cfg.TestRepository {
+		fmt.Fprintln(stderr, "режим тестового репозитория пока не реализован")
+		return exitError
+	}
+
+	index, err := apk.DownloadIndex(cfg.RepositoryURL)
+	if err != nil {
+		fmt.Fprintf(stderr, "Ошибка загрузки APKINDEX: %v\n", err)
+		return exitError
+	}
+
+	pkg, err := apk.FindPackage(index, cfg.PackageName, cfg.PackageVersion)
+	if err != nil {
+		fmt.Fprintf(stderr, "Ошибка поиска пакета: %v\n", err)
+		return exitError
+	}
+
+	app.RunDeps(pkg, stderr)
 	return exitOK
 }
