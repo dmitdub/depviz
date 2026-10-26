@@ -1,0 +1,8 @@
+package_name = "A"
+package_version = ""
+repository_url = ""
+test_repository = true
+test_file_path = "testdata/graph_test.txt"
+output_image = "deps.svg"
+max_depth = 5
+filter_substring = ""
