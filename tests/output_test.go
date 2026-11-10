@@ -25,6 +25,7 @@ output_image     = "out.svg"
 max_depth        = 3
 filter_substring = "dev"
 reverse          = false
+ascii_tree       = false
 `
 	if err := os.WriteFile(p, []byte(content), 0o600); err != nil {
 		t.Fatal(err)
@@ -41,7 +42,8 @@ reverse          = false
 	out := buf.String()
 	keys := []string{
 		"package.name", "package.version", "repository.url", "test.repository",
-		"test.file.path", "output.image", "max.depth", "filter.substring", "reverse",
+		"test.file.path", "output.image", "max.depth", "filter.substring",
+		"reverse", "ascii.tree",
 	}
 	for _, key := range keys {
 		if !strings.Contains(out, key) {

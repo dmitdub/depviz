@@ -19,7 +19,8 @@ Alpine Linux (apk). Учебный проект по дисциплине
 * **Этап 4 — Дополнительные операции.** Обратные зависимости:
   кто зависит от заданного пакета. Обход с учётом `max_depth`
   и `filter_substring`, обработка циклов.
-* Этап 5 — в разработке.
+* **Этап 5 — Визуализация.** Генерация PlantUML-текста,
+  SVG-файла через `plantuml.jar`, опциональное ASCII-дерево.
 
 ## Структура проекта
 
@@ -29,7 +30,8 @@ Alpine Linux (apk). Учебный проект по дисциплине
     │   ├── app/            вывод конфигурации и графа
     │   ├── apk/            скачивание и парсинг APKINDEX, обратные зависимости
     │   ├── config/         разбор и валидация TOML
-    │   └── graph/          построение и обход графа (прямой и обратный)
+    │   ├── graph/          построение и обход графа (прямой и обратный)
+    │   └── render/         PlantUML, SVG, ASCII-дерево
     ├── tests/              тесты
     ├── testdata/           примеры конфигов и тестовых данных
     ├── scripts/            скрипты запуска и проверок
@@ -40,8 +42,24 @@ Alpine Linux (apk). Учебный проект по дисциплине
 ## Требования
 
 * Go 1.27 или новее.
+* Java 11+ (для `plantuml.jar` на этапе 5).
 * POSIX-совместимая оболочка (Linux, macOS, WSL, Git Bash) для
   скриптов в `scripts/`.
+
+## Подготовка `plantuml.jar`
+
+Для этапа 5 нужен `plantuml.jar`. Скачать:
+
+    https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
+
+Положить в `bin/plantuml.jar`:
+
+    mkdir -p bin
+    # скачать plantuml.jar в bin/
+
+Проверить:
+
+    java -jar bin/plantuml.jar -version
 
 ## Сборка
 
@@ -67,10 +85,16 @@ Alpine Linux (apk). Учебный проект по дисциплине
     make run-reverse
     bash scripts/run-reverse.sh
 
-С произвольным конфигом:
+Визуализация с PlantUML и ASCII-деревом:
 
-    ./bin/depviz path/to/config.toml
-    bash scripts/run.sh path/to/config.toml
+    make run-render
+    bash scripts/run-render.sh testdata/config.example.toml
+
+Три пакета для демонстрации визуализации:
+
+    bash scripts/run-three.sh
+
+Создаёт `curl.svg`, `vim.svg`, `openssl.svg`.
 
 ## Тесты
 
@@ -80,7 +104,9 @@ Alpine Linux (apk). Учебный проект по дисциплине
 ## Параметры конфигурации
 
 Источник — TOML-файл. Примеры — `testdata/config.example.toml`,
-`testdata/config.test.toml`, `testdata/config.reverse.toml`.
+`testdata/config.test.toml`, `testdata/config.reverse.toml`,
+`testdata/config.curl.toml`, `testdata/config.vim.toml`,
+`testdata/config.openssl.toml`.
 
 | Ключ              | Тип    | Описание                                           |
 |-------------------|--------|----------------------------------------------------|
@@ -89,10 +115,11 @@ Alpine Linux (apk). Учебный проект по дисциплине
 | `repository_url`  | string | URL apk-репозитория                                |
 | `test_repository` | bool   | Режим тестового репозитория                        |
 | `test_file_path`  | string | Путь к файлу тестового репозитория                 |
-| `output_image`    | string | Имя файла с изображением графа                     |
+| `output_image`    | string | Имя файла с изображением графа (SVG)               |
 | `max_depth`       | int    | Максимальная глубина анализа (`>= 1`)              |
 | `filter_substring`| string | Подстрока для фильтрации пакетов                   |
-| `reverse`         | bool   | Режим обратных зависимостей (кто зависит от пакета)|
+| `reverse`         | bool   | Режим обратных зависимостей                        |
+| `ascii_tree`      | bool   | Печатать ASCII-дерево после PlantUML               |
 
 ## Тестовый репозиторий
 
@@ -114,17 +141,48 @@ Alpine Linux (apk). Учебный проект по дисциплине
 с учётом `max_depth` и `filter_substring`, циклы обрабатываются
 через `seen`.
 
-Пример конфига — `testdata/config.reverse.toml`:
+Пример конфига — `testdata/config.reverse.toml`.
 
-    package_name     = "libcurl"
-    reverse          = true
-    max_depth        = 2
-    ...
+## Визуализация (этап 5)
+
+При запуске приложение:
+1. Строит граф (прямой или обратный).
+2. Печатает его в `stderr` в формате `root` / `nodes` / `graph`.
+3. Генерирует PlantUML-текст и печатает его в `stderr`.
+4. Рендерит SVG через `java -jar bin/plantuml.jar -tsvg`.
+5. Если `ascii_tree = true` — печатает ASCII-дерево.
+
+Пример конфига — `testdata/config.curl.toml`:
+
+    package_name     = "curl"
+    repository_url   = "https://dl-cdn.alpinelinux.org/alpine/v3.20/main/x86_64/"
+    output_image     = "curl.svg"
+    max_depth        = 3
+    ascii_tree       = true
 
 Запуск:
 
-    make run-reverse
-    bash scripts/run-reverse.sh
+    bash scripts/run-render.sh testdata/config.curl.toml
+
+Результат:
+- `curl.svg` — изображение графа;
+- в `stderr` — PlantUML-текст и ASCII-дерево.
+
+Для трёх пакетов — `bash scripts/run-three.sh`.
+
+## Сравнение с `apk`
+
+На Windows `apk` недоступен, поэтому сравнение выполнено с веб-интерфейсом
+Alpine: `https://pkgs.alpinelinux.org/package/v3.20/main/x86_64/curl`.
+
+Для `curl` веб-интерфейс показывает зависимости:
+`libcurl so:libc.musl-x86_64.so.1 so:libcurl.so.4 so:libz.so.1`.
+
+Наш инструмент выводит: `libcurl` (без `so:`-зависимостей).
+
+**Расхождение:** мы фильтруем `so:`-зависимости, потому что это библиотеки,
+а не пакеты Alpine. Для построения графа пакетов они не нужны.
+Прямая пакетная зависимость (`libcurl`) совпадает.
 
 ## Обработка ошибок
 
@@ -163,14 +221,17 @@ Alpine Linux (apk). Учебный проект по дисциплине
       libcurl (depth=1): ca-certificates
       ca-certificates (depth=2): (none)
 
-Обратные зависимости:
+Визуализация:
 
-    $ make run-reverse
-    root: libcurl
-    nodes: N
-    graph:
-      libcurl (depth=0): curl, ...
-      ...
+    $ bash scripts/run-render.sh testdata/config.curl.toml
+    @startuml
+    "curl" --> "libcurl"
+    "libcurl" --> "ca-certificates"
+    @enduml
+    SVG сохранён: curl.svg
+    curl
+    └── libcurl
+        └── ca-certificates
 
 ## Лицензия
 

@@ -22,6 +22,7 @@ type Config struct {
 	MaxDepth        int    `toml:"max_depth"`
 	FilterSubstring string `toml:"filter_substring"`
 	Reverse         bool   `toml:"reverse"`
+	ASCIITree       bool   `toml:"ascii_tree"`
 }
 
 // Load читает TOML-файл по пути path и возвращает провалидированную конфигурацию.
@@ -76,5 +77,6 @@ func (c *Config) AsKeyValue() [][2]string {
 		{"max.depth", fmt.Sprintf("%d", c.MaxDepth)},
 		{"filter.substring", c.FilterSubstring},
 		{"reverse", fmt.Sprintf("%v", c.Reverse)},
+		{"ascii.tree", fmt.Sprintf("%v", c.ASCIITree)},
 	}
 }

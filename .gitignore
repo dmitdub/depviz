@@ -6,5 +6,5 @@ coverage.out
 .vscode/
 Thumbs.db
 desktop.ini
-deps.svg
-deps.png
+*.svg
+*.png

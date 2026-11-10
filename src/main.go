@@ -9,6 +9,7 @@ import (
 	"github.com/dmitdub/depviz/src/app"
 	"github.com/dmitdub/depviz/src/config"
 	"github.com/dmitdub/depviz/src/graph"
+	"github.com/dmitdub/depviz/src/render"
 )
 
 // Коды возврата процесса.
@@ -19,6 +20,9 @@ const (
 
 // defaultConfigPath — путь к конфигу по умолчанию.
 const defaultConfigPath = "testdata/config.example.toml"
+
+// defaultPlantUMLJar — путь к plantuml.jar по умолчанию.
+const defaultPlantUMLJar = "bin/plantuml.jar"
 
 // main запускает приложение и завершает процесс с соответствующим кодом.
 func main() {
@@ -45,6 +49,11 @@ func run(args []string, stderr *os.File) int {
 	}
 
 	app.RunGraph(g, stderr)
+
+	if err := runRender(cfg, g, stderr); err != nil {
+		fmt.Fprintf(stderr, "Ошибка визуализации: %v\n", err)
+		return exitError
+	}
 	return exitOK
 }
 
@@ -105,4 +114,20 @@ func buildReverseResolver(cfg *config.Config) (graph.Resolver, error) {
 		return nil, err
 	}
 	return apk.ReverseResolverFromIndex(index), nil
+}
+
+// runRender генерирует PlantUML-текст, SVG-файл и ASCII-дерево.
+func runRender(cfg *config.Config, g *graph.Graph, stderr *os.File) error {
+	puml := render.ToPlantUML(g)
+	fmt.Fprintln(stderr, puml)
+
+	if err := render.WriteSVG(puml, cfg.OutputImage, defaultPlantUMLJar); err != nil {
+		return err
+	}
+	fmt.Fprintf(stderr, "SVG сохранён: %s\n", cfg.OutputImage)
+
+	if cfg.ASCIITree {
+		fmt.Fprint(stderr, render.ToASCII(g))
+	}
+	return nil
 }

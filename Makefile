@@ -1,7 +1,7 @@
 BIN := bin/depviz
 SRC := ./src/
 
-.PHONY: build test run run-apk run-graph run-reverse demo vet clean
+.PHONY: build test run run-apk run-graph run-reverse run-render demo vet clean
 
 build:
 	go build -o $(BIN) $(SRC)
@@ -19,6 +19,9 @@ run-graph: build
 
 run-reverse: build
 	./$(BIN) testdata/config.reverse.toml
+
+run-render: build
+	./$(BIN) testdata/config.curl.toml
 
 demo: build
 	bash scripts/run-all.sh

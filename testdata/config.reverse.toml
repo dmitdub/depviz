@@ -7,3 +7,4 @@ output_image     = "deps.svg"
 max_depth        = 2
 filter_substring = ""
 reverse          = true
+ascii_tree       = false

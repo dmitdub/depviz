@@ -1,4 +1,3 @@
-// Package tests содержит тесты для depviz.
 package tests
 
 import (
@@ -14,7 +13,7 @@ const (
 	// testMaxDepth — глубина, используемая в тестовых конфигах.
 	testMaxDepth = 3
 	// expectedParams — сколько параметров возвращает Config.AsKeyValue.
-	expectedParams = 9
+	expectedParams = 10
 )
 
 // loadErrorCases — таблица кейсов для TestConfigLoadErrors.
@@ -72,6 +71,7 @@ output_image     = "out.svg"
 max_depth        = 3
 filter_substring = "dev"
 reverse          = false
+ascii_tree       = false
 `)
 	cfg, err := config.Load(p)
 	if err != nil {

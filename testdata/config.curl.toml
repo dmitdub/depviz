@@ -1,0 +1,10 @@
+package_name = "curl"
+package_version = "8.14.1-r2"
+repository_url = "https://dl-cdn.alpinelinux.org/alpine/v3.20/main/x86_64/"
+test_repository = false
+test_file_path = ""
+output_image = "curl.svg"
+max_depth = 3
+filter_substring = ""
+reverse = false
+ascii_tree = true
