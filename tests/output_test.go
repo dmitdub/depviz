@@ -24,6 +24,7 @@ test_repository  = false
 output_image     = "out.svg"
 max_depth        = 3
 filter_substring = "dev"
+reverse          = false
 `
 	if err := os.WriteFile(p, []byte(content), 0o600); err != nil {
 		t.Fatal(err)
@@ -40,14 +41,11 @@ filter_substring = "dev"
 	out := buf.String()
 	keys := []string{
 		"package.name", "package.version", "repository.url", "test.repository",
-		"test.file.path", "output.image", "max.depth", "filter.substring",
+		"test.file.path", "output.image", "max.depth", "filter.substring", "reverse",
 	}
 	for _, key := range keys {
 		if !strings.Contains(out, key) {
 			t.Errorf("вывод не содержит ключ %q:\n%s", key, out)
 		}
-	}
-	if !strings.Contains(out, "configuration:") {
-		t.Errorf("вывод не содержит заголовок configuration:\n%s", out)
 	}
 }

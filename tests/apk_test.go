@@ -13,6 +13,10 @@ const (
 	expectedCurlDeps = 2
 	// expectedFooDeps — сколько зависимостей у foo с ограничением версии.
 	expectedFooDeps = 2
+	// expectedSingleDep — один пакет в D: (для TestScannerNoTrailingNewline).
+	expectedSingleDep = 1
+	// expectedNoDeps — ноль зависимостей (граница среза).
+	expectedNoDeps = 0
 )
 
 // testIndex — минимальный APKINDEX для тестов.
@@ -69,8 +73,8 @@ func TestFindPackageNoDeps(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
-	if len(pkg.Dependencies) != 0 {
-		t.Fatalf("want 0 deps, got %d", len(pkg.Dependencies))
+	if len(pkg.Dependencies) != expectedNoDeps {
+		t.Fatalf("want %d deps, got %d", expectedNoDeps, len(pkg.Dependencies))
 	}
 }
 
@@ -121,8 +125,8 @@ func TestDependenciesEmptyD(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
-	if len(pkg.Dependencies) != 0 {
-		t.Fatalf("want 0 deps, got %d", len(pkg.Dependencies))
+	if len(pkg.Dependencies) != expectedNoDeps {
+		t.Fatalf("want %d deps, got %d", expectedNoDeps, len(pkg.Dependencies))
 	}
 }
 
@@ -133,7 +137,7 @@ func TestScannerNoTrailingNewline(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
-	if len(pkg.Dependencies) != 1 || pkg.Dependencies[0] != "bar" {
+	if len(pkg.Dependencies) != expectedSingleDep || pkg.Dependencies[0] != "bar" {
 		t.Fatalf("want [bar], got %v", pkg.Dependencies)
 	}
 }

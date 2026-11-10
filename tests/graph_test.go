@@ -22,6 +22,8 @@ const (
 	repoEntries = 3
 	// aDeps — сколько зависимостей у A.
 	aDeps = 2
+	// noDeps — ноль зависимостей (граница среза).
+	noDeps = 0
 )
 
 // testRepo — тестовый репозиторий с циклом.
@@ -106,8 +108,8 @@ func TestParseTestRepo(t *testing.T) {
 	if len(repo["A"]) != aDeps {
 		t.Fatalf("want %d deps for A, got %d", aDeps, len(repo["A"]))
 	}
-	if len(repo["C"]) != 0 {
-		t.Fatalf("want 0 deps for C, got %d", len(repo["C"]))
+	if len(repo["C"]) != noDeps {
+		t.Fatalf("want %d deps for C, got %d", noDeps, len(repo["C"]))
 	}
 }
 

@@ -14,7 +14,7 @@ const (
 	// testMaxDepth — глубина, используемая в тестовых конфигах.
 	testMaxDepth = 3
 	// expectedParams — сколько параметров возвращает Config.AsKeyValue.
-	expectedParams = 8
+	expectedParams = 9
 )
 
 // loadErrorCases — таблица кейсов для TestConfigLoadErrors.
@@ -71,6 +71,7 @@ test_repository  = false
 output_image     = "out.svg"
 max_depth        = 3
 filter_substring = "dev"
+reverse          = false
 `)
 	cfg, err := config.Load(p)
 	if err != nil {

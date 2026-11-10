@@ -38,13 +38,7 @@ func run(args []string, stderr *os.File) int {
 		return exitError
 	}
 
-	resolve, err := buildResolver(cfg)
-	if err != nil {
-		fmt.Fprintf(stderr, "Ошибка подготовки репозитория: %v\n", err)
-		return exitError
-	}
-
-	g, err := graph.Build(cfg.PackageName, cfg.MaxDepth, cfg.FilterSubstring, resolve)
+	g, err := buildGraph(cfg)
 	if err != nil {
 		fmt.Fprintf(stderr, "Ошибка построения графа: %v\n", err)
 		return exitError
@@ -54,7 +48,24 @@ func run(args []string, stderr *os.File) int {
 	return exitOK
 }
 
-// buildResolver выбирает источник зависимостей: тестовый файл или APKINDEX.
+// buildGraph строит прямой или обратный граф в зависимости от cfg.Reverse.
+func buildGraph(cfg *config.Config) (*graph.Graph, error) {
+	if cfg.Reverse {
+		resolve, err := buildReverseResolver(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return graph.Reverse(cfg.PackageName, cfg.MaxDepth, cfg.FilterSubstring, resolve)
+	}
+
+	resolve, err := buildResolver(cfg)
+	if err != nil {
+		return nil, err
+	}
+	return graph.Build(cfg.PackageName, cfg.MaxDepth, cfg.FilterSubstring, resolve)
+}
+
+// buildResolver выбирает источник прямых зависимостей: тестовый файл или APKINDEX.
 func buildResolver(cfg *config.Config) (graph.Resolver, error) {
 	if cfg.TestRepository {
 		data, err := os.ReadFile(cfg.TestFilePath)
@@ -73,4 +84,25 @@ func buildResolver(cfg *config.Config) (graph.Resolver, error) {
 		return nil, err
 	}
 	return apk.ResolverFromIndex(index), nil
+}
+
+// buildReverseResolver выбирает источник обратных зависимостей.
+func buildReverseResolver(cfg *config.Config) (graph.Resolver, error) {
+	if cfg.TestRepository {
+		data, err := os.ReadFile(cfg.TestFilePath)
+		if err != nil {
+			return nil, err
+		}
+		repo, err := graph.ParseTestRepo(data)
+		if err != nil {
+			return nil, err
+		}
+		return graph.ResolverFromRepo(repo), nil
+	}
+
+	index, err := apk.DownloadIndex(cfg.RepositoryURL)
+	if err != nil {
+		return nil, err
+	}
+	return apk.ReverseResolverFromIndex(index), nil
 }
